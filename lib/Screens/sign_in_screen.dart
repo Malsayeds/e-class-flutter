@@ -21,7 +21,8 @@ class SignInScreen extends StatefulWidget {
   _SignInScreenState createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMixin {
+class _SignInScreenState extends State<SignInScreen>
+    with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
   int _duration;
   bool _visible = false;
@@ -67,8 +68,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
         vsync: this,
         lowerBound: 1.0,
         upperBound: 1.20,
-        duration: Duration(milliseconds: 3000)
-    );
+        duration: Duration(milliseconds: 3000));
 
     _controllerB.addListener(() {
       setState(() {
@@ -144,13 +144,13 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                       userDetails.getEmail.value,
                       userDetails.getPass.value,
                       context,
-                      scaffoldKey
-                  );
+                      scaffoldKey);
                   Navigator.pop(context);
                   if (login) {
                     userDetails.destroyLoginValues();
                     Navigator.push(
-                        context, MaterialPageRoute(
+                        context,
+                        MaterialPageRoute(
                             builder: (context) => MyBottomNavigationBar(
                                   pageInd: 0,
                                 )));
@@ -225,7 +225,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
     });
   }
 
-  Future<String> socialLogin(url, email, password, code, name, uid) async{
+  Future<String> socialLogin(url, email, password, code, name, uid) async {
     final res = await http.post(url, body: {
       "email": email,
       "password": password,
@@ -233,21 +233,23 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
       "name": name,
     });
     print("Status: ${res.statusCode}");
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       authToken = body["access_token"];
       var refreshToken = body["access_token"];
       await storage.write(key: "token", value: "$authToken");
       await storage.write(key: "refreshToken", value: "$refreshToken");
       authToken = await storage.read(key: "token");
-      HomeDataProvider homeData = Provider.of<HomeDataProvider>(context, listen: false);
+      HomeDataProvider homeData =
+          Provider.of<HomeDataProvider>(context, listen: false);
       await homeData.getHomeDetails(context);
       Navigator.push(
-          context, MaterialPageRoute(
-          builder: (context) => MyBottomNavigationBar(
-            pageInd: 0,
-          )));
-    } else{
+          context,
+          MaterialPageRoute(
+              builder: (context) => MyBottomNavigationBar(
+                    pageInd: 0,
+                  )));
+    } else {
       setState(() {
         isShowing = false;
       });
@@ -267,31 +269,40 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                 backgroundColor: Colors.white,
                 title: Row(
                   children: [
-                    CircularProgressIndicator(valueColor:
-                    new AlwaysStoppedAnimation<Color>(Theme.of(context).backgroundColor),),
-                    SizedBox(width: 15.0,),
-                    Text("Loading ..",
+                    CircularProgressIndicator(
+                      valueColor: new AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).backgroundColor),
+                    ),
+                    SizedBox(
+                      width: 15.0,
+                    ),
+                    Text(
+                      "Loading ..",
                       style: TextStyle(color: Colors.black.withOpacity(0.7)),
                     )
                   ],
                 ),
               ),
-              onWillPop: () async => false)
-      );
+              onWillPop: () async => false));
     } else {
       Navigator.pop(context);
     }
   }
 
   Widget googleLoginButton(width, scaffoldKey) {
-    return Padding(padding: EdgeInsets.symmetric(horizontal: 8.0),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
       child: Row(
         children: [
-          Expanded(child: ButtonTheme(
-            height: 52,
-            child: RaisedButton.icon(
-              icon: Icon(FontAwesomeIcons.google, color: Colors.red,),
-              color: Colors.white,
+          Expanded(
+            child: ButtonTheme(
+              height: 52,
+              child: RaisedButton.icon(
+                icon: Icon(
+                  FontAwesomeIcons.google,
+                  color: Colors.red,
+                ),
+                color: Colors.white,
                 onPressed: () async {
                   // signInWithGoogle().then((result) {
                   //   if (result != null) {
@@ -306,58 +317,71 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                   //     socialLogin(APIData.googleLoginApi, email, password, code, name, "uid");
                   //   }
                   // });
-                  },
-              label: Text("Sign in with Google", style: TextStyle(
-              fontSize: 18.0,
-              color: Colors.black.withOpacity(0.7),
-            ),),),
-          ),),
+                },
+                label: Text(
+                  "Sign in with Google",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    color: Colors.black.withOpacity(0.7),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
-      ),);
+      ),
+    );
   }
 
   Widget fbLoginButton(width, scaffoldKey) {
     var userDetails = Provider.of<UserDetailsProvider>(context, listen: false);
-    return Padding(padding: EdgeInsets.symmetric(horizontal: 8.0),
-    child: Row(
-      children: [
-        Expanded(child: ButtonTheme(
-          height: 52.0,
-          child: RaisedButton.icon(
-            color: Color(0xFF4267B2),
-            icon: Icon(FontAwesomeIcons.facebook, color: Colors.white,),
-            label: Text("Sign in with Facebook", style: TextStyle(color: Colors.white, fontSize: 18.0),),
-            onPressed: () async {
-              if(userDetails.getSignInEmail){
-                FocusScope.of(context).requestFocus(FocusNode());
-                showLoaderDialog(context);
-                bool login = await httpService.login(
-                    userDetails.getEmail.value,
-                    userDetails.getPass.value,
-                    context,
-                    scaffoldKey
-                );
-                Navigator.pop(context);
-                if (login) {
-                  userDetails.destroyLoginValues();
-                  Navigator.push(
-                      context, MaterialPageRoute(
-                      builder: (context) => MyBottomNavigationBar(
-                        pageInd: 0,
-                      )));
-                } else {
-                  return;
-                }
-              } else{
-                return;
-              }
-            }
-          ),
-        )),
-      ],
-    ),);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+              child: ButtonTheme(
+            height: 52.0,
+            child: RaisedButton.icon(
+                color: Color(0xFF4267B2),
+                icon: Icon(
+                  FontAwesomeIcons.facebook,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  "Sign in with Facebook",
+                  style: TextStyle(color: Colors.white, fontSize: 18.0),
+                ),
+                onPressed: () async {
+                  if (userDetails.getSignInEmail) {
+                    FocusScope.of(context).requestFocus(FocusNode());
+                    showLoaderDialog(context);
+                    bool login = await httpService.login(
+                        userDetails.getEmail.value,
+                        userDetails.getPass.value,
+                        context,
+                        scaffoldKey);
+                    Navigator.pop(context);
+                    if (login) {
+                      userDetails.destroyLoginValues();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyBottomNavigationBar(
+                                    pageInd: 0,
+                                  )));
+                    } else {
+                      return;
+                    }
+                  } else {
+                    return;
+                  }
+                }),
+          )),
+        ],
+      ),
+    );
   }
-
 
 //  Sign up row
   Widget signUpRow() {
@@ -381,11 +405,13 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
               bottom: 3, // space between underline and text
             ),
             decoration: BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(
-              color: Colors.white, // Text colour here
-              width: 1.0, // Underline width
-            ))),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white, // Text colour here
+                  width: 1.0, // Underline width
+                ),
+              ),
+            ),
             child: InkWell(
               child: Text(
                 "Sign Up",
@@ -403,8 +429,14 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
 //  Login View
   Widget loginFields(homeAPIData, scaffoldKey) {
     var width = MediaQuery.of(context).size.width;
-    var fb = Provider.of<HomeDataProvider>(context, listen: false).homeModel.settings.fbLoginEnable;
-    var googleLogin = Provider.of<HomeDataProvider>(context, listen: false).homeModel.settings.googleLoginEnable;
+    var fb = Provider.of<HomeDataProvider>(context, listen: false)
+        .homeModel
+        .settings
+        .fbLoginEnable;
+    var googleLogin = Provider.of<HomeDataProvider>(context, listen: false)
+        .homeModel
+        .settings
+        .googleLoginEnable;
     return Container(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -426,7 +458,9 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
           SizedBox(
             height: 50,
           ),
-          "$googleLogin" == "1"  || googleLogin == 1 ? googleLoginButton(width, scaffoldKey) : SizedBox.shrink(),
+          "$googleLogin" == "1" || googleLogin == 1
+              ? googleLoginButton(width, scaffoldKey)
+              : SizedBox.shrink(),
           SizedBox(
             height: 15,
           ),
@@ -528,18 +562,13 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
   }
 
 // All Login field logo, text fields, text, social icons, copyright text, sign up text
-  Widget loginView(width, homeAPIData,scaffoldKey) {
+  Widget loginView(width, homeAPIData, scaffoldKey) {
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
-      child: Container(
-          height: MediaQuery.of(context).orientation == Orientation.landscape
-              ? 1.6 * MediaQuery.of(context).size.height
-              : MediaQuery.of(context).size.height,
-          padding: EdgeInsets.all(16),
-          child: Align(
-            alignment: FractionalOffset.bottomCenter,
-            child: loginFields(homeAPIData, scaffoldKey),
-          )),
+      child: Align(
+        alignment: FractionalOffset.bottomCenter,
+        child: loginFields(homeAPIData, scaffoldKey),
+      ),
     );
   }
 
@@ -556,49 +585,54 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var homeData = Provider.of<HomeDataProvider>(context);
-    return WillPopScope(child: Scaffold(
-      key: scaffoldKey,
-      resizeToAvoidBottomInset: false,
-      body: homeData.homeModel == null
-          ? Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset("assets/images/logo.png"),
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(
-                  valueColor:
-                  AlwaysStoppedAnimation<Color>(Color(0xFFF44A4A)),
-                ),
-              ],
-            )
-          ],
+    return WillPopScope(
+        child: Scaffold(
+          key: scaffoldKey,
+          body: homeData.homeModel == null
+              ? Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            "assets/images/logo.png",
+                            width: width / 2,
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFF44A4A)),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                )
+              : scaffoldView(width, homeData, scaffoldKey),
         ),
-      )
-          : scaffoldView(width, homeData, scaffoldKey),
-    ), onWillPop: onBackPressed);
+        onWillPop: onBackPressed);
   }
+
   Future<bool> onBackPressed() {
     bool value;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
         contentPadding: EdgeInsets.only(top: 5.0, left: 20.0, bottom: 0.0),
         title: Text(
           'Confirm Exit',
@@ -637,6 +671,4 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
     );
     return new Future.value(value);
   }
-  
 }
-
